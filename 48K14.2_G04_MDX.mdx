@@ -1,0 +1,44 @@
+﻿--1. Trung bình chi phí chỗ ở tại mỗi loại hình lưu trú
+WITH MEMBER [Measures].[Average Cost] AS
+	IIF( 
+		[Measures].[Fact Trip Count] = 0,
+		NULL,
+		[Measures].[Accommodation Cost]/[Measures].[Fact Trip Count]
+		)
+SELECT [Measures].[Average Cost] ON COLUMNS,
+	ORDER([Dim Accommodation].[Accommodation Type].[Accommodation Type],[Measures].[Average Cost],DESC) ON ROWS
+FROM [Trips_CUBE]
+
+--1. Địa điểm du lịch được du khách lựa chọn nhiều nhất 
+SELECT	[Measures].[Fact Trip Count] ON COLUMNS,
+		ORDER(NONEMPTY([Dim Location].[City].[City]),
+		[Measures].[Fact Trip Count], DESC) ON ROWS
+FROM [Trips_CUBE]
+
+--2.Số Lượng Chuyến Đi Theo Tháng
+SELECT
+    [Measures].[Fact Trip Count] ON COLUMNS,
+    [Dim Time].[Month Start].[Month Start] ON ROWS
+FROM [Trips_CUBE]
+WHERE [Dim Location].[Country].[Country]
+
+--4. Phương tiện phổ biến khi đi du lịch của du khách
+SELECT	[Measures].[Fact Trip Count] ON COLUMNS,
+		ORDER([Dim Transportation].[Transportation Type].[Transportation Type],
+		[Measures].[Fact Trip Count], DESC) ON ROWS
+FROM [Trips_CUBE]
+
+--5. Trung Bình Thời Gian Du lịch Theo Độ Tuổi Của du khách
+WITH MEMBER [Measures].[Average Duration Days] AS
+    IIF(
+        [Measures].[Fact Trip Count] = 0,
+        NULL, -- Nếu không có chuyến đi nào, trả về NULL
+        [Measures].[Duration Days] / [Measures].[Fact Trip Count]
+    )
+SELECT
+    NONEMPTY([Measures].[Average Duration Days]) ON COLUMNS,
+	NONEMPTY([Dim Traveler].[Traveler Age].[Traveler Age]) ON ROWS
+FROM [Trips_CUBE]
+
+
+		
